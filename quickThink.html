@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QuickThink</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+        url("https://images.unsplash.com/photo-1503676260728-1c00da094a0b");
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1400px;
+}
+
+.card {
+    width: 440px;
+    background: white;
+    padding: 30px;
+    border-radius: 22px;
+    text-align: center;
+    transform-style: preserve-3d;
+    transform: rotateX(6deg);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.35);
+    transition: 0.5s;
+}
+
+.card:hover {
+    transform: rotateX(0deg) scale(1.03);
+}
+
+.section { display: none; }
+
+h1 { font-size: 36px; }
+h2 { margin-bottom: 15px; }
+p { color: #444; }
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #000, #333);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+.option {
+    background: #f1f1f1;
+    color: #000;
+}
+
+.option:hover {
+    background: #000;
+    color: #fff;
+}
+
+/* Visual panel */
+.visual-panel {
+    margin-top: 25px;
+    padding: 18px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    transform: translateY(60px) scale(0.95);
+    opacity: 0;
+    transition: all 0.6s ease;
+}
+
+.visual-panel.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.visual-panel img {
+    width: 100%;
+    border-radius: 14px;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- AUDIO -->
+<audio id="bgMusic" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7c66a0d62a.mp3">
+</audio>
+
+<audio id="clickSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3">
+</audio>
+
+<div class="card">
+
+<!-- INTRO -->
+<div class="section" id="intro">
+    <h1>QuickThink</h1>
+    <p>Think fast. Choose smart.</p>
+    <button onclick="startMusic(); show('subjects')">Start Quiz</button>
+</div>
+
+<!-- SUBJECTS -->
+<div class="section" id="subjects">
+    <h2>Select a Subject</h2>
+    <button onclick="startQuiz('AI')">Artificial Intelligence</button>
+    <button onclick="startQuiz('OS')">Operating System</button>
+    <button onclick="startQuiz('DS')">Data Structure</button>
+    <button onclick="startQuiz('REASONING')">Reasoning</button>
+</div>
+
+<!-- QUIZ -->
+<div class="section" id="quiz">
+    <h3 id="subjectTitle"></h3>
+    <p id="question"></p>
+
+    <button class="option" onclick="answer(0)" id="o0"></button>
+    <button class="option" onclick="answer(1)" id="o1"></button>
+    <button class="option" onclick="answer(2)" id="o2"></button>
+    <button class="option" onclick="answer(3)" id="o3"></button>
+
+    <div class="visual-panel" id="visualPanel">
+        <img id="visualImage">
+        <p id="visualText"></p>
+    </div>
+</div>
+
+<!-- RESULT -->
+<div class="section" id="result">
+    <h2>🎉 Quiz Completed</h2>
+    <p id="finalScore"></p>
+    <button onclick="location.reload()">Restart</button>
+</div>
+
+</div>
+
+<script>
+/* click sound */
+document.querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () =>
+        document.getElementById("clickSound").play()
+    )
+);
+
+function startMusic() {
+    document.getElementById("bgMusic").play();
+}
+
+function show(id) {
+    document.querySelectorAll(".section").forEach(s => s.style.display="none");
+    document.getElementById(id).style.display="block";
+}
+
+/* QUESTIONS */
+const questions = {
+AI: Array(10).fill().map((_,i)=>({
+ q:["AI stands for?","ML is subset of?","NLP deals with?","ChatGPT is?","AI learns from?","Deep Learning uses?","Vision AI works on?","AI inspired by?","Supervised learning needs?","Goal of AI?"][i],
+ o:[
+ ["Artificial Intelligence","Auto Info","Advanced Input","None"],
+ ["AI","OS","DS","DB"],
+ ["Images","Text","Audio","Network"],
+ ["OS","AI Model","Browser","Compiler"],
+ ["Rules","Data","Games","Luck"],
+ ["Trees","Layers","Tables","Files"],
+ ["Text","Audio","Images","Code"],
+ ["CPU","RAM","Brain","GPU"],
+ ["Labels","Magic","OS","Noise"],
+ ["Think","Act","Decide","All"]
+ ][i],
+ a:[0,0,1,1,1,1,2,2,0,3][i]
+})),
+
+OS: Array(10).fill().map((_,i)=>({
+ q:["OS manages?","Heart of OS?","Round Robin is?","Linux is?","Deadlock needs?","Thread is?","Paging avoids?","Semaphore is for?","Context switch?","OS boots via?"][i],
+ o:[
+ ["Hardware","Software","Users","All"],
+ ["Kernel","Shell","CPU","RAM"],
+ ["Paging","Scheduling","Deadlock","Memory"],
+ ["Paid","Open Source","Closed","Illegal"],
+ ["No wait","Circular wait","Fast CPU","RAM"],
+ ["Process","Lightweight process","Program","Job"],
+ ["Fragmentation","Crash","Starvation","Deadlock"],
+ ["Storage","Sync","Memory","Boot"],
+ ["CPU change","Process change","Disk change","User change"],
+ ["BIOS","CPU","RAM","GPU"]
+ ][i],
+ a:[3,0,1,1,1,1,0,1,1,0][i]
+})),
+
+DS: Array(10).fill().map((_,i)=>({
+ q:["Stack follows?","Queue follows?","Fast search?","BST means?","Heap is?","Graph has?","Linear DS?","DFS uses?","Linked list stores?","Traversal means?"][i],
+ o:[
+ ["FIFO","LIFO","Random","Tree"],
+ ["FIFO","LIFO","Tree","Graph"],
+ ["Array","Linked List","Hashing","Stack"],
+ ["Binary Search Tree","Big Tree","Basic Tree","None"],
+ ["Sorted","Complete tree","Graph","List"],
+ ["Nodes","Edges","Both","None"],
+ ["Array","Graph","Tree","Heap"],
+ ["Queue","Stack","Array","List"],
+ ["Contiguous","Non-contiguous","Static","Fixed"],
+ ["Insert","Delete","Visit","Sort"]
+ ][i],
+ a:[1,0,2,0,1,2,0,1,1,2][i]
+})),
+
+REASONING: Array(10).fill().map((_,i)=>({
+ q:["2,4,8,16 ?","Odd one?","Day after Monday?","1,4,9 ?","Fastest?","Synonym of quick?","Mirror of LEFT?","A>B,B>C then?","Clock angle at 3?","Odd one?"][i],
+ o:[
+ ["18","24","32","64"],
+ ["Dog","Cat","Lion","Chair"],
+ ["Sunday","Tuesday","Friday","Saturday"],
+ ["12","14","16","18"],
+ ["Car","Plane","Train","Bike"],
+ ["Slow","Rapid","Late","Weak"],
+ ["TFEL","LEFT","RIGHT","NONE"],
+ ["A>C","A<C","B>A","None"],
+ ["90°","180°","60°","45°"],
+ ["Circle","Square","Triangle","Sphere"]
+ ][i],
+ a:[2,3,1,2,1,1,0,0,0,3][i]
+}))
+};
+
+let set=[], i=0, score=0;
+
+function startQuiz(sub) {
+    set = questions[sub];
+    i = 0;
+    score = 0;
+    document.getElementById("subjectTitle").innerText = sub + " Quiz";
+    show("quiz");
+    load();
+}
+
+function load() {
+    const q = set[i];
+    document.getElementById("question").innerText = q.q;
+    q.o.forEach((x,j)=>document.getElementById("o"+j).innerText=x);
+    document.getElementById("visualPanel").classList.remove("show");
+}
+
+function showVisual(correct) {
+    const panel = document.getElementById("visualPanel");
+    document.getElementById("visualImage").src =
+        correct
+        ? "https://images.unsplash.com/photo-1531482615713-2afd69097998"
+        : "https://images.unsplash.com/photo-1520975922284-7b958f7f43b3";
+    document.getElementById("visualText").innerText =
+        correct ? "Nice choice! 😎" : "Oops! Not quite 😬";
+    panel.classList.add("show");
+    panel.scrollIntoView({behavior:"smooth"});
+}
+
+function answer(opt) {
+    const correct = opt === set[i].a;
+    if(correct) score++;
+    showVisual(correct);
+
+    setTimeout(()=>{
+        i++;
+        if(i<10) load();
+        else{
+            document.getElementById("finalScore").innerText =
+              `Your Score: ${score} / 10`;
+            show("result");
+        }
+    },1200);
+}
+
+show("intro");
+</script>
+
+</body>
+</html>
